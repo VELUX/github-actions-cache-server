@@ -1318,8 +1318,7 @@ class AzBlobAdapter implements StorageAdapter {
     const blockBlobClient = this.containerClient.getBlockBlobClient(this.blobKey(objectName))
     const response = await blockBlobClient.download()
     if (!response.readableStreamBody) throw new Error(`No stream for blob "${objectName}"`)
-    // Casting from NodeJS.ReadableStream to Readable
-    return response.readableStreamBody as Readable
+    return Readable.from(response.readableStreamBody)
   }
 
   async uploadStream(objectName: string, stream: AsyncIterable<Uint8Array>): Promise<void> {
