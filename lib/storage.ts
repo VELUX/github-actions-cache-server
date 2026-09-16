@@ -1331,24 +1331,36 @@ class AzBlobAdapter implements StorageAdapter {
     return this.containerClient.getBlobClient(this.blobKey(objectName)).exists()
   }
 
-  async deleteFolder(folderName: string): Promise<StorageDeletion> {
+  async deleteByPrefix(prefix: string): Promise<StorageDeletion> {
+    // Azure caps a batch at 256 subrequests - align LIST paging with that so each page = one batch.
+    const BATCH_SIZE = 256
     const deleted = { objects: 0, bytes: 0 }
-    const blobs = this.containerClient.listBlobsFlat({
-      prefix: `${this.blobKey(folderName)}/`,
-    })
-    for await (const blob of blobs) {
-      deleted.objects++
-      deleted.bytes += blob.properties.contentLength ?? 0
-      await this.containerClient.deleteBlob(blob.name)
+    const batchClient = this.containerClient.getBlobBatchClient()
+
+    const pages = this.containerClient.listBlobsFlat({ prefix }).byPage({ maxPageSize: BATCH_SIZE })
+
+    for await (const page of pages) {
+      const blobs = page.segment.blobItems
+      if (blobs.length === 0) continue
+
+      const clients = blobs.map((blob) => {
+        deleted.objects += 1
+        deleted.bytes += blob.properties.contentLength ?? 0
+        return this.containerClient.getBlobClient(blob.name)
+      })
+
+      await batchClient.deleteBlobs(clients)
     }
+
     return deleted
   }
 
+  async deleteFolder(folderName: string): Promise<StorageDeletion> {
+    return this.deleteByPrefix(`${this.blobKey(folderName)}/`)
+  }
+
   async clear(): Promise<void> {
-    const blobs = this.containerClient.listBlobsFlat({ prefix: this.blobKey('') })
-    for await (const blob of blobs) {
-      await this.containerClient.deleteBlob(blob.name)
-    }
+    await this.deleteByPrefix(this.blobKey(''))
   }
 
   async countFilesInFolder(folderName: string): Promise<number> {
