@@ -108,8 +108,6 @@ config:
       # account: ''
       # -- Azure Blob container name (required when driver is "azblob")
       # container: ''
-      # -- Azure Storage connection string. Can also be provided via existingSecret.
-      # connectionString: ''
       # -- Custom Azure Blob Storage endpoint URL (optional, defaults URL created using account name)
       # endpoint: ''
 
@@ -158,7 +156,7 @@ config:
 
 # -- Name of an existing Kubernetes Secret containing sensitive environment variables.
 # Use this to avoid storing secrets in values.yaml. The secret keys should match
-# the env var names (e.g., AWS_SECRET_ACCESS_KEY, DB_POSTGRES_PASSWORD, DB_POSTGRES_URL, etc.)
+# the env var names (e.g., AWS_SECRET_ACCESS_KEY, DB_POSTGRES_PASSWORD, DB_POSTGRES_URL, STORAGE_AZBLOB_CONNECTION_STRING  etc.)
 existingSecret: ''
 
 serviceAccount:

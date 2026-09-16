@@ -203,10 +203,6 @@ Generate environment variables from config values.
 - name: STORAGE_AZBLOB_CONTAINER
   value: {{ .container | quote }}
 {{- end }}
-{{- if .connectionString }}
-- name: STORAGE_AZBLOB_CONNECTION_STRING
-  value: {{ .connectionString | quote }}
-{{- end }}
 {{- if .endpoint }}
 - name: STORAGE_AZBLOB_ENDPOINT
   value: {{ .endpoint | quote }}
