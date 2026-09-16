@@ -1334,7 +1334,7 @@ class AzBlobAdapter implements StorageAdapter {
   async deleteFolder(folderName: string): Promise<StorageDeletion> {
     const deleted = { objects: 0, bytes: 0 }
     const blobs = this.containerClient.listBlobsFlat({
-      prefix: this.blobKey(folderName),
+      prefix: `${this.blobKey(folderName)}/`,
     })
     for await (const blob of blobs) {
       deleted.objects++
@@ -1353,7 +1353,9 @@ class AzBlobAdapter implements StorageAdapter {
 
   async countFilesInFolder(folderName: string): Promise<number> {
     let count = 0
-    const blobs = this.containerClient.listBlobsFlat({ prefix: this.blobKey(folderName) })
+    const blobs = this.containerClient.listBlobsFlat({
+      prefix: `${this.blobKey(folderName)}/`,
+    })
     for await (const _ of blobs) {
       count++
     }
@@ -1362,7 +1364,7 @@ class AzBlobAdapter implements StorageAdapter {
 
   async getFolderSize(folderName: string): Promise<number> {
     const blobs = this.containerClient.listBlobsFlat({
-      prefix: this.blobKey(folderName),
+      prefix: `${this.blobKey(folderName)}/`,
     })
     let size = 0
     for await (const blob of blobs) {
