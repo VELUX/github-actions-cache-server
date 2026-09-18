@@ -1270,6 +1270,7 @@ class AzBlobAdapter implements StorageAdapter {
     const account = env.STORAGE_AZBLOB_ACCOUNT
     const container = env.STORAGE_AZBLOB_CONTAINER
 
+    const usesSharedKey = Boolean(env.STORAGE_AZBLOB_CONNECTION_STRING)
     const client = env.STORAGE_AZBLOB_CONNECTION_STRING
       ? BlobServiceClient.fromConnectionString(env.STORAGE_AZBLOB_CONNECTION_STRING)
       : new BlobServiceClient(
@@ -1284,26 +1285,31 @@ class AzBlobAdapter implements StorageAdapter {
       client,
       account,
       container,
+      usesSharedKey,
     })
   }
 
   private client
   private account
   private container
+  private usesSharedKey
   private keyPrefix = 'gh-actions-cache'
 
   constructor({
     client,
     account,
     container,
+    usesSharedKey,
   }: {
     client: BlobServiceClient
     account: string
     container: string
+    usesSharedKey: boolean
   }) {
     this.client = client
     this.account = account
     this.container = container
+    this.usesSharedKey = usesSharedKey
   }
 
   private get containerClient() {
@@ -1404,23 +1410,31 @@ class AzBlobAdapter implements StorageAdapter {
   }
 
   async createDownloadUrl(objectName: string, expiresAt: number): Promise<string> {
-    const startsOn = new Date()
+    // Backdate start by 5 minutes so clock skew doesn't cause "not yet valid" rejections.
+    const CLOCK_SKEW_MS = 5 * 60 * 1000
+    const startsOn = new Date(Date.now() - CLOCK_SKEW_MS)
     const expiresOn = new Date(expiresAt)
+    const permissions = BlobSASPermissions.parse('r')
+    const blobClient = this.containerClient.getBlobClient(this.blobKey(objectName))
+
+    // Shared-key connection strings can't request a user delegation key
+    // (that requires Entra ID), so sign directly against the shared key.
+    if (this.usesSharedKey) {
+      return blobClient.generateSasUrl({ permissions, startsOn, expiresOn })
+    }
 
     const delegationKey = await this.client.getUserDelegationKey(startsOn, expiresOn)
-
     const sasParams = generateBlobSASQueryParameters(
       {
         containerName: this.container,
         blobName: this.blobKey(objectName),
-        permissions: BlobSASPermissions.parse('r'),
+        permissions,
         startsOn,
         expiresOn,
       },
       delegationKey,
       this.account,
     )
-
-    return `https://${this.account}.blob.core.windows.net/${this.container}/${this.blobKey(objectName)}?${sasParams.toString()}`
+    return `${blobClient.url}?${sasParams.toString()}`
   }
 }
