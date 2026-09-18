@@ -103,12 +103,15 @@ config:
       # endpoint: ''
 
     # -- Azure Blob Storage driver settings
+    # Auth is either a connection string (STORAGE_AZBLOB_CONNECTION_STRING via existingSecret)
+    # or `account` + workload identity (DefaultAzureCredential). The connection string carries
+    # its own account and endpoint, so `account` and `endpoint` are ignored in that mode.
     azblob:
-      # -- Azure Storage account name (required when driver is "azblob")
-      # account: ''
       # -- Azure Blob container name (required when driver is "azblob")
       # container: ''
-      # -- Custom Azure Blob Storage endpoint URL (optional, defaults URL created using account name)
+      # -- Azure Storage account name (required only when using DefaultAzureCredential; ignored when a connection string is set)
+      # account: ''
+      # -- Custom Azure Blob Storage endpoint URL (optional, defaults to https://<account>.blob.core.windows.net; ignored when a connection string is set)
       # endpoint: ''
 
   # -- Database driver configuration

@@ -94,7 +94,6 @@ const TESTING_ENV_BY_STORAGE_DRIVER = {
   },
   azblob: {
     STORAGE_DRIVER: 'azblob',
-    STORAGE_AZBLOB_ACCOUNT: 'devstoreaccount1',
     STORAGE_AZBLOB_CONTAINER: 'vitest',
     STORAGE_AZBLOB_CONNECTION_STRING:
       'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1;',

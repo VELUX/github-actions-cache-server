@@ -22,10 +22,17 @@ export const envStorageDriverSchema = type.or(
   },
   {
     'STORAGE_DRIVER': type.unit('azblob'),
-    'STORAGE_AZBLOB_ACCOUNT': 'string',
     'STORAGE_AZBLOB_CONTAINER': 'string',
-    'STORAGE_AZBLOB_CONNECTION_STRING?': 'string',
+    'STORAGE_AZBLOB_CONNECTION_STRING': 'string',
+    'STORAGE_AZBLOB_ACCOUNT?': 'undefined',
+    'STORAGE_AZBLOB_ENDPOINT?': 'undefined',
+  },
+  {
+    'STORAGE_DRIVER': type.unit('azblob'),
+    'STORAGE_AZBLOB_CONTAINER': 'string',
+    'STORAGE_AZBLOB_ACCOUNT': 'string',
     'STORAGE_AZBLOB_ENDPOINT?': 'string.url',
+    'STORAGE_AZBLOB_CONNECTION_STRING?': 'undefined',
   },
 )
 export const envDbDriverSchema = type.or(

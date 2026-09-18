@@ -1267,14 +1267,14 @@ class GcsAdapter implements StorageAdapter {
 
 class AzBlobAdapter implements StorageAdapter {
   static async fromEnv(env: Extract<Env, { STORAGE_DRIVER: 'azblob' }>) {
-    const account = env.STORAGE_AZBLOB_ACCOUNT
     const container = env.STORAGE_AZBLOB_CONTAINER
 
     const usesSharedKey = Boolean(env.STORAGE_AZBLOB_CONNECTION_STRING)
     const client = env.STORAGE_AZBLOB_CONNECTION_STRING
       ? BlobServiceClient.fromConnectionString(env.STORAGE_AZBLOB_CONNECTION_STRING)
       : new BlobServiceClient(
-          env.STORAGE_AZBLOB_ENDPOINT ?? `https://${account}.blob.core.windows.net`,
+          env.STORAGE_AZBLOB_ENDPOINT ??
+            `https://${env.STORAGE_AZBLOB_ACCOUNT}.blob.core.windows.net`,
           new DefaultAzureCredential(),
         )
 
@@ -1283,7 +1283,7 @@ class AzBlobAdapter implements StorageAdapter {
 
     return new AzBlobAdapter({
       client,
-      account,
+      account: client.accountName,
       container,
       usesSharedKey,
     })
